@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 
 class map:
-    #Deklarasi variabel awal yang nantinya akan digunakan
+
     def __init__(self) -> None:
         self.scale = 10
         self.len = 0
@@ -41,12 +41,10 @@ class map:
             ]
         self.map = Image.new("RGBA",(self.width, self.height ), "gray" )
         self.mapDraw = ImageDraw.Draw(self.map)
-        
-    #Fungsi limit ini untuk membatasi posisi x dan y agar tidak keluar dari map
+
     def limitX(self, x) : return 0 if x <= 0 else (x if x < self.width else self.width )
     def limitY(self, y) : return 0 if y <= 0 else (y if y < self.height else self.height )
-    #Fungsi untuk membuat jalan , dimulai dari titik 0,0
-    #Menggunakan metode rekursif    
+
     def makeRoads(self, pos, direction):
         self.len += 1
         if self.len > 150 and (pos[0]<=0 or pos[0]>=self.width or pos[1] <= 0 or pos[1] >=self.height ): return
@@ -63,15 +61,14 @@ class map:
         if(ysort[1] >= self.height or ysort[1] <= 0) : 
             self.simpang.append((pos[0]+10, self.limitY(ysort[1])))
         if not sum(valid) : 
-            #Fungsi untk menggambar jalan
+
             self.mapDraw.rectangle(((xsort[0], ysort[0]), (xsort[1] , ysort[1] )), "black")
             if direction == "y" : self.mapDraw.line(((xsort[0] + 10, ysort[0] + 10), ( xsort[0] +10 , ysort[1] - 10)),"white", 1)
             else : self.mapDraw.line(((xsort[0] + 20 , ysort[0] + 10), ( xsort[1] -10 , ysort[0]+10 )),"white", 1)
         
         nextX = self.width if nextvertice[0] <= 0 else (nextvertice[0] - (20 if direction == "y" else 0) if nextvertice[0] < self.width else 0)
         nextY = self.height if nextvertice[1] <= 0 else (nextvertice[1] - (20 if direction == 'x' else 0) if nextvertice[1] < self.height else 0)
-        # if nextX == self.lastVertex[0] and self.lastVertex2[1] < nextY: self.map.paste( self.corner[1], (self.lastVertex))
-        # if nextX == self.lastVertex[0] and self.lastVertex2[1] > nextY: self.map.paste( self.corner[0], (self.lastVertex))
+
         print((nextX, nextY) , " : last - ", self.lastVertex, self.lastVertex2)
         self.lastVertex = (nextX, nextY)
         self.lastVertex2 = pos
@@ -90,7 +87,6 @@ class map:
         self.mapping()
         self.map.save("map2.png")
         return self.map
-    
     
     def generateBuilding(self, pos):
         x = pos[0][0]
@@ -123,8 +119,7 @@ class map:
                 else : break
             y += tertinggi + self.padding
         x = pos[0][0]
-        
-        #Sama saja , tapi untuk titik paling bawah area
+
         if abs(pos[1][1] - pos[0][1]) < 120 : return
         while x < pos[1][0]:
             kandidat = getBangunanX(x)
@@ -134,18 +129,14 @@ class map:
                 self.map.paste(build, (x, pos[1][1]-build.size[1]))
                 x += build.size[0] + self.jarak
             else: break
-        
-    #Fungsi mapping dipanggil untuk memetakan area yang sekirannya bisa dimasukkan bangunan 
-    #Biasanya berupa area kotak 
-    #Utk algoritmanya dia cari sebuah titik kemudian cari titik tetangga terdekatnya 
+
     def mapping(self):
         text = ["" for i in range(len(self.simpang))]
-        
-        #MEncari titik yang akan dijadikan titik orign area
+
         for idx, titik in enumerate(self.simpang):
             if titik[1] > self.height : continue
             nearX,nearY = 0,0
-            #Perulangan untuk mencari titik tetangga terdekat
+
             for titikTetangga in self.simpang:
                 if titik != titikTetangga and titik[0] > 0 and titik[1] > 0:
                     nearX = titikTetangga[0] if  (titikTetangga[0] > nearX and titikTetangga[0] < titik[0] and titik[1] == titikTetangga[1]) else nearX
@@ -164,7 +155,7 @@ class map:
 
 
 myMap = map()
-#Attribut yang akan digunakan oleh UI atau mengatur windows  
+
 zoom_factor = 1.0
 INITIAL_WIDTH = 500
 INITIAL_HEIGHT = 400
@@ -185,8 +176,7 @@ def update_map():
     map_label.config(image=img_tk)
     map_label.image = img_tk
     update()
-    
-#Fungsi untuk mengupdate tampilan ketika terjadi zoom in / zoom out / pergeseran map/ viewpoint
+
 def update():
     print("zoom")
     global new_map
@@ -195,22 +185,19 @@ def update():
     img_tk = ImageTk.PhotoImage(resized_map)
     map_label.config(image=img_tk)
     map_label.image = img_tk
-    
-#Fungsi untuk memperkecil tampilan / viewport
+
 def zoom_in():
     global zoom_factor
     if zoom_factor < 5.0:
         zoom_factor += 0.1
         update()
 
-# Fungsi untuk memperbesar tampilan/ viewport map
 def zoom_out():
     global zoom_factor
     if zoom_factor > 0.5:
         zoom_factor -= 0.1
         update()
-#Fungsi scroll untk mendapatkan event ketika terjadi scroll pada mouse
-#Maka zoom factor atau skala zoom akan diubah berdasarkan arah scrolling
+
 def scroll(event):
     global viewport_x, viewport_y, zoom_factor
     if event.delta > 0:# Scroll ke atas
@@ -220,9 +207,6 @@ def scroll(event):
             zoom_factor += 0.1
     update()
             
-
-#Ini fungsi untuk mendeteksi ketika keyword a,s,d,w ditekan
-#Dan berfungsi untuk menggeser viewpoint / posisi
 def on_key_press(event):
     global viewport_y, viewport_x
     if event.keysym == 'a' and viewport_x > 0:
@@ -235,7 +219,6 @@ def on_key_press(event):
         viewport_y -= 20
     update()
 
-#Inisialiasi GUI / Interface dari Window Form yang akan ditampilkan kepada user
 root = tk.Tk()
 root.title("Map Generator")
 root.bind("<MouseWheel>", scroll)
