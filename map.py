@@ -4,238 +4,227 @@ from numpy import sort
 import tkinter as tk
 from tkinter import ttk
 
-class map:
-
-    def __init__(self) -> None:
-        self.scale = 10
-        self.len = 0
-        self.width = 150*self.scale
-        self.height = 150*self.scale
-        self.padding = self.scale
-        self.road_len = 20*self.scale
-        self.road_width = 20
-        self.simpang = []
+class Peta:
+    def __init__(self):
+        self.skala = 10
+        self.panjang = 0
+        self.lebar = 150 * self.skala
+        self.tinggi = 150 * self.skala
+        self.batas = self.skala
+        self.panjang_jalan = 20 * self.skala
+        self.lebar_jalan = 20
+        self.persimpangan = []
         self.jarak = 10
-        self.corner = [Image.open("env/cornerL.png").resize((20,20)),Image.open("env/cornerR.png").resize((20,20))]
-        self.jalan = [Image.open("env/jalanx.png"),Image.open("env/jalany.jpg")]
-        self.buildings = [
-            Image.open("building/building1.jpg").resize((50,30)),
-            Image.open("building/medium2-x.jpg").resize((50,30)), 
-            Image.open("building/large-x.jpg").resize((100,50)), 
-            Image.open("building/large2-x.jpg").resize((100,50)),
-            Image.open("building/house.jpg").resize((20,10)),
-            Image.open("building/small-x.jpg").resize((20,20))
-            ]
-        self.buildings2 = [
-            Image.open("building/medium2-y.jpg").resize((30,50)), 
-            Image.open("building/large-y.jpg").resize((50,100)),
-            Image.open("building/house.jpg").resize((10,20)),
-            Image.open("building/large2-y.jpg").resize((50,100)),
-            Image.open("building/small-x.jpg").resize((20,20))
-            ]
-        self.env = [
-            Image.open("env/treeA.jpg").resize((20,20)),
-            Image.open("env/bushA.png").resize((20,20)), 
-            Image.open("env/bushB.jpg").resize((20,20)), 
-            Image.open("env/batuA.jpg").resize((20,20))
-            ]
-        self.map = Image.new("RGBA",(self.width, self.height ), "gray" )
-        self.mapDraw = ImageDraw.Draw(self.map)
-
-    def limitX(self, x) : return 0 if x <= 0 else (x if x < self.width else self.width )
-    def limitY(self, y) : return 0 if y <= 0 else (y if y < self.height else self.height )
-
-    def makeRoads(self, pos, direction):
-        self.len += 1
-        if self.len > 150 and (pos[0]<=0 or pos[0]>=self.width or pos[1] <= 0 or pos[1] >=self.height ): return
-        self.simpang.append(pos)
-        step = random.choice([1,1])
-
-        nextvertice = ( pos[0] + self.road_width if direction == "y" else pos[0] + self.road_len  * step, pos[1] + self.road_width if direction == "x" else pos[1] + self.road_len *step)
-        if nextvertice not in self.simpang : self.simpang.append(nextvertice)
-        valid = [pos[0] <= 0 and direction == "y", pos[1] <=0 and direction == "x", nextvertice[1] >= self.height and direction == "x", pos[0] >= self.height and direction == "x"]
-        nextvertice = (self.limitX(nextvertice[0]), self.limitY(nextvertice[1]))
-        xsort, ysort = sort([pos[0], nextvertice[0]]), sort([pos[1], nextvertice[1]])
-        if(xsort[1] >= self.width or xsort[1] <= 0) : 
-            self.simpang.append((self.limitX(xsort[1]), pos[1]))
-        if(ysort[1] >= self.height or ysort[1] <= 0) : 
-            self.simpang.append((pos[0]+10, self.limitY(ysort[1])))
-        if not sum(valid) : 
-
-            self.mapDraw.rectangle(((xsort[0], ysort[0]), (xsort[1] , ysort[1] )), "black")
-            if direction == "y" : self.mapDraw.line(((xsort[0] + 10, ysort[0] + 10), ( xsort[0] +10 , ysort[1] - 10)),"white", 1)
-            else : self.mapDraw.line(((xsort[0] + 20 , ysort[0] + 10), ( xsort[1] -10 , ysort[0]+10 )),"white", 1)
         
-        nextX = self.width if nextvertice[0] <= 0 else (nextvertice[0] - (20 if direction == "y" else 0) if nextvertice[0] < self.width else 0)
-        nextY = self.height if nextvertice[1] <= 0 else (nextvertice[1] - (20 if direction == 'x' else 0) if nextvertice[1] < self.height else 0)
-
-        print((nextX, nextY) , " : last - ", self.lastVertex, self.lastVertex2)
-        self.lastVertex = (nextX, nextY)
-        self.lastVertex2 = pos
-        self.makeRoads((nextX,nextY ),random.choice(["x", 'y']) )
-    
-    
-    def createMap(self):
-        self.simpang = [(0,0), (0,self.height), (self.width , 0) ,(self.width, self.height)]
-        self.len = 0
-        self.lastVertex = (random.randrange(0, self.width, self.road_len), random.choice([0, self.height]))
-        self.lastVertex2 = (random.randrange(0, self.width, self.road_len), random.choice([0, self.height]))
-        self.map = Image.new("RGBA",(self.width, self.height ), (100,100,100) )
-        self.mapDraw = ImageDraw.Draw(self.map)
-        self.makeRoads(self.lastVertex, "y")
-        self.map.save("map1.png")
-        self.mapping()
-        self.map.save("map2.png")
-        return self.map
-    
-    def generateBuilding(self, pos):
-        x = pos[0][0]
-        def getBangunanX(x):
-            return [bangunan for bangunan in self.buildings if bangunan.size[0] + x < pos[1][0]-self.padding]
-        def getBangunanY(x,y):
-            return [bangunan for bangunan in self.env if bangunan.size[0] + x < pos[1][0]-self.padding and bangunan.size[1] + y < pos[1][1]-50]
+        # Menginisialisasi dan mengacak elemen-elemen
+        self.sudut = [Image.open("env/cornerL.png").resize((20,20)), Image.open("env/cornerR.png").resize((20,20))]
+        random.shuffle(self.sudut)
         
-        while x < pos[1][0]:
-            kandidat = getBangunanX(x)
+        self.jalan = [Image.open("env/jalanx.png"), Image.open("env/jalany.jpg")]
+        random.shuffle(self.jalan)
+        
+        self.bangunan = [Image.open("building/building1.jpg"), Image.open("building/medium2-x.jpg"), Image.open("building/large-x.jpg"), Image.open("building/large2-x.jpg"), Image.open("building/small-x.jpg")]
+        random.shuffle(self.bangunan)
+        
+        self.bangunan2 = [Image.open("building/medium2-y.jpg"), Image.open("building/large-y.jpg"), Image.open("building/large2-y.jpg"), Image.open("building/small-x.jpg")]
+        random.shuffle(self.bangunan2)
+        
+        self.lingkungan = [Image.open("env/treeA.jpg"), Image.open("env/bushA.png"), Image.open("env/bushB.jpg"), Image.open("env/batuA.jpg")]
+        random.shuffle(self.lingkungan)
+        
+        self.peta = Image.new("RGBA", (self.lebar, self.tinggi), "gray")
+        self.gambar_peta = ImageDraw.Draw(self.peta)
+
+    def batasX(self, x): return 0 if x <= 0 else (x if x < self.lebar else self.lebar)
+    def batasY(self, y): return 0 if y <= 0 else (y if y < self.tinggi else self.tinggi)
+
+    def buatJalan(self, posisi, arah):
+        self.panjang += 1
+        if self.panjang > 150 and (posisi[0] <= 0 or posisi[0] >= self.lebar or posisi[1] <= 0 or posisi[1] >= self.tinggi): return
+        self.persimpangan.append(posisi)
+        langkah = random.choice([1, 1])
+        simpul_berikutnya = (posisi[0] + self.lebar_jalan if arah == "y" else posisi[0] + self.panjang_jalan * langkah,
+                             posisi[1] + self.lebar_jalan if arah == "x" else posisi[1] + self.panjang_jalan * langkah)
+        if simpul_berikutnya not in self.persimpangan: self.persimpangan.append(simpul_berikutnya)
+        valid = [posisi[0] <= 0 and arah == "y", posisi[1] <= 0 and arah == "x", simpul_berikutnya[1] >= self.tinggi and arah == "x", posisi[0] >= self.tinggi and arah == "x"]
+        simpul_berikutnya = (self.batasX(simpul_berikutnya[0]), self.batasY(simpul_berikutnya[1]))
+        xsort, ysort = sort([posisi[0], simpul_berikutnya[0]]), sort([posisi[1], simpul_berikutnya[1]])
+        if xsort[1] >= self.lebar or xsort[1] <= 0:
+            self.persimpangan.append((self.batasX(xsort[1]), posisi[1]))
+        if ysort[1] >= self.tinggi or ysort[1] <= 0:
+            self.persimpangan.append((posisi[0] + 10, self.batasY(ysort[1])))
+        if not sum(valid):
+            self.gambar_peta.rectangle(((xsort[0], ysort[0]), (xsort[1], ysort[1])), "black")
+            if arah == "y":
+                self.gambar_peta.line(((xsort[0] + 10, ysort[0] + 10), (xsort[0] + 10, ysort[1] - 10)), "white", 1)
+            else:
+                self.gambar_peta.line(((xsort[0] + 20, ysort[0] + 10), (xsort[1] - 10, ysort[0] + 10)), "white", 1)
+
+        nextX = self.lebar if simpul_berikutnya[0] <= 0 else (simpul_berikutnya[0] - (20 if arah == "y" else 0) if simpul_berikutnya[0] < self.lebar else 0)
+        nextY = self.tinggi if simpul_berikutnya[1] <= 0 else (simpul_berikutnya[1] - (20 if arah == 'x' else 0) if simpul_berikutnya[1] < self.tinggi else 0)
+        self.simpul_terakhir = (nextX, nextY)
+        self.simpul_terakhir2 = posisi
+        self.buatJalan((nextX, nextY), random.choice(["x", "y"]))
+
+    def buatPeta(self):
+        self.persimpangan = [(0, 0), (0, self.tinggi), (self.lebar, 0), (self.lebar, self.tinggi)]
+        self.panjang = 0
+        self.simpul_terakhir = (random.randrange(0, self.lebar, self.panjang_jalan), random.choice([0, self.tinggi]))
+        self.simpul_terakhir2 = (random.randrange(0, self.lebar, self.panjang_jalan), random.choice([0, self.tinggi]))
+        self.peta = Image.new("RGBA", (self.lebar, self.tinggi), (100, 100, 100))
+        self.gambar_peta = ImageDraw.Draw(self.peta)
+        self.buatJalan(self.simpul_terakhir, "y")
+        self.peta.save("peta1.png")
+        self.pemetaan()
+        self.peta.save("peta2.png")
+        return self.peta
+
+    def buatBangunan(self, posisi):
+        x = posisi[0][0]
+        def dapatkanBangunanX(x):
+            return [bangunan for bangunan in self.bangunan if bangunan.size[0] + x < posisi[1][0] - self.batas]
+
+        def dapatkanBangunanY(x, y):
+            return [bangunan for bangunan in self.lingkungan if bangunan.size[0] + x < posisi[1][0] - self.batas and bangunan.size[1] + y < posisi[1][1] - 50]
+
+        while x < posisi[1][0]:
+            kandidat = dapatkanBangunanX(x)
             if len(kandidat):
-                build = random.choice(kandidat)
-                self.mapDraw.rectangle(((x, pos[0][1]), (x+build.size[0]+20, pos[0][1]+build.size[1])),"green")
-                self.map.paste(build, (x, pos[0][1]))
-                x += build.size[0] + self.jarak
-            else: break
-        x = pos[0][0]
-        y = pos[0][1] + 50 + self.padding
-        
-        while  y < pos[1][1] - 50:
+                bangun = random.choice(kandidat)
+                self.gambar_peta.rectangle(((x, posisi[0][1]), (x + bangun.size[0] + 20, posisi[0][1] + bangun.size[1])), "green")
+                self.peta.paste(bangun, (x, posisi[0][1]))
+                x += bangun.size[0] + self.jarak
+            else:
+                break
+        x = posisi[0][0]
+        y = posisi[0][1] + 50 + self.batas
+        while y < posisi[1][1] - 50:
             tertinggi = 50
-            while x < pos[1][0] :
-                kandidat = getBangunanY(x, y)
+            while x < posisi[1][0]:
+                kandidat = dapatkanBangunanY(x, y)
                 if len(kandidat):
-                    build = random.choice(kandidat)
-                    self.mapDraw.rectangle(((x,y), (x+build.size[0]+20, y+build.size[1])),"green")
-                    self.map.paste(build, (x, random.randint(y, y+(tertinggi - build.size[1]))))
-                    tertinggi = max(build.size[1], tertinggi)
-                    x += build.size[0] + self.padding
-                else : break
-            y += tertinggi + self.padding
-        x = pos[0][0]
+                    bangun = random.choice(kandidat)
+                    self.gambar_peta.rectangle(((x, y), (x + bangun.size[0] + 20, y + bangun.size[1])), "green")
+                    self.peta.paste(bangun, (x, random.randint(y, y + (tertinggi - bangun.size[1]))))
+                    tertinggi = max(bangun.size[1], tertinggi)
+                    x += bangun.size[0] + self.batas
+                else:
+                    break
+            y += tertinggi + self.batas
+        x = posisi[0][0]
 
-        if abs(pos[1][1] - pos[0][1]) < 120 : return
-        while x < pos[1][0]:
-            kandidat = getBangunanX(x)
+        if abs(posisi[1][1] - posisi[0][1]) < 120:
+            return
+        while x < posisi[1][0]:
+            kandidat = dapatkanBangunanX(x)
             if len(kandidat):
-                build = random.choice(kandidat)
-                self.mapDraw.rectangle(((x, pos[1][1]-build.size[1]), (x+build.size[0]+20, pos[1][1]-build.size[1]+build.size[1])),"green")
-                self.map.paste(build, (x, pos[1][1]-build.size[1]))
-                x += build.size[0] + self.jarak
-            else: break
+                bangun = random.choice(kandidat)
+                self.gambar_peta.rectangle(((x, posisi[1][1] - bangun.size[1]), (x + bangun.size[0] + 20, posisi[1][1] - bangun.size[1] + bangun.size[1])), "green")
+                self.peta.paste(bangun, (x, posisi[1][1] - bangun.size[1]))
+                x += bangun.size[0] + self.jarak
+            else:
+                break
 
-    def mapping(self):
-        text = ["" for i in range(len(self.simpang))]
+    def pemetaan(self):
+        teks = ["" for _ in range(len(self.persimpangan))]
 
-        for idx, titik in enumerate(self.simpang):
-            if titik[1] > self.height : continue
-            nearX,nearY = 0,0
+        for idx, titik in enumerate(self.persimpangan):
+            if titik[1] > self.tinggi:
+                continue
+            dekatX, dekatY = 0, 0
+            for tetangga in self.persimpangan:
+                if titik != tetangga and titik[0] > 0 and titik[1] > 0:
+                    dekatX = tetangga[0] if (tetangga[0] > dekatX and tetangga[0] < titik[0] and titik[1] == tetangga[1]) else dekatX
+                    dekatY = tetangga[1] if (tetangga[1] > dekatY and tetangga[1] < titik[1]) else dekatY
+            if idx < len(teks) and teks[idx] != "":
+                teks[idx] = ""
 
-            for titikTetangga in self.simpang:
-                if titik != titikTetangga and titik[0] > 0 and titik[1] > 0:
-                    nearX = titikTetangga[0] if  (titikTetangga[0] > nearX and titikTetangga[0] < titik[0] and titik[1] == titikTetangga[1]) else nearX
-                    nearY = titikTetangga[1] if  (titikTetangga[1] > nearY and titikTetangga[1] < titik[1]) else nearY
-            if idx < len(text) and text[idx] != "":
-                text[idx] = ""
-            if titik[1] == 1500 : 
-                print(titik, ": ", nearX , nearY)
-            if titik[0] - nearX >= 30 and titik[1]-nearY >= 30:
-                if (titik[0], nearY) not in self.simpang: 
-                    text.append("aha")
-                    self.simpang.append((titik[0], nearY-20))
-                if titik[1] < self.width - 20 : self.mapDraw.rectangle(((nearX+1,nearY+1), (titik[0]-1, titik[1]-1)), "gray")
-                self.mapDraw.rectangle(((nearX+10,nearY+10), (titik[0]-10, titik[1]-10)), "green")
-                self.generateBuilding(((nearX+10,nearY+10), (titik[0]-10, titik[1]-10)))
+            if titik[1] == 1500:
+                print(titik, ": ", dekatX, dekatY)
+            if titik[0] - dekatX >= 30 and titik[1] - dekatY >= 30:
+                if (titik[0], dekatY) not in self.persimpangan:
+                    teks.append("aha")
+                    self.persimpangan.append((titik[0], dekatY - 20))
+                self.gambar_peta.rectangle(((dekatX + 10, dekatY + 10), (titik[0] - 10, titik[1] - 10)), "green")
+                self.buatBangunan(((dekatX + 10, dekatY + 10), (titik[0] - 10, titik[1] - 10)))
 
+petaSaya = Peta()
+faktor_zoom = 1.0
+LEBAR_AWAL = 500
+TINGGI_AWAL = 400
+lebar_viewport = 400
+tinggi_viewport = 400
+viewport_x = LEBAR_AWAL // 2 - (lebar_viewport // 2)
+viewport_y = TINGGI_AWAL // 2 - (tinggi_viewport // 2)
+peta_baru = None
 
-myMap = map()
+def perbarui_peta():
+    global peta_baru, label_peta
+    peta_baru = petaSaya.buatPeta()
+    print(petaSaya.persimpangan)
+    peta_terpotong = peta_baru.crop((viewport_x, viewport_y, viewport_x + lebar_viewport, viewport_y + tinggi_viewport))
+    peta_ubah_ukuran = peta_terpotong.resize((LEBAR_AWAL, TINGGI_AWAL))
+    img_tk = ImageTk.PhotoImage(peta_ubah_ukuran)
+    label_peta.config(image=img_tk)
+    label_peta.image = img_tk
+    perbarui()
 
-zoom_factor = 1.0
-INITIAL_WIDTH = 500
-INITIAL_HEIGHT = 400
-viewport_width = 400
-viewport_height = 400
-viewport_x = INITIAL_WIDTH//2 - (viewport_width//2)
-viewport_y = INITIAL_HEIGHT//2 -(viewport_height//2)
-new_map = None
+def perbarui():
+    global peta_baru
+    peta_terpotong = peta_baru.crop((viewport_x * faktor_zoom, viewport_y * faktor_zoom, viewport_x * faktor_zoom + lebar_viewport * faktor_zoom, viewport_y * faktor_zoom + tinggi_viewport * faktor_zoom))
+    peta_ubah_ukuran = peta_terpotong.resize((LEBAR_AWAL, TINGGI_AWAL))
+    img_tk = ImageTk.PhotoImage(peta_ubah_ukuran)
+    label_peta.config(image=img_tk)
+    label_peta.image = img_tk
 
+def perbesar():
+    global faktor_zoom
+    if faktor_zoom < 5.0:
+        faktor_zoom += 0.1
+        perbarui()
 
-def update_map():
-    global new_map, map_label
-    new_map  = myMap.createMap()
-    print(myMap.simpang)
-    cropped_map = new_map.crop((viewport_x, viewport_y, viewport_x + viewport_width, viewport_y + viewport_height))
-    resized_map = cropped_map.resize((INITIAL_WIDTH, INITIAL_HEIGHT))
-    img_tk = ImageTk.PhotoImage(resized_map)
-    map_label.config(image=img_tk)
-    map_label.image = img_tk
-    update()
-
-def update():
-    print("zoom")
-    global new_map
-    cropped_map = new_map.crop((viewport_x * zoom_factor, viewport_y * zoom_factor, viewport_x* zoom_factor + viewport_width* zoom_factor, viewport_y* zoom_factor + viewport_height* zoom_factor))
-    resized_map = cropped_map.resize((INITIAL_WIDTH, INITIAL_HEIGHT))
-    img_tk = ImageTk.PhotoImage(resized_map)
-    map_label.config(image=img_tk)
-    map_label.image = img_tk
-
-def zoom_in():
-    global zoom_factor
-    if zoom_factor < 5.0:
-        zoom_factor += 0.1
-        update()
-
-def zoom_out():
-    global zoom_factor
-    if zoom_factor > 0.5:
-        zoom_factor -= 0.1
-        update()
+def perkecil():
+    global faktor_zoom
+    if faktor_zoom > 0.5:
+        faktor_zoom -= 0.1
+        perbarui()
 
 def scroll(event):
-    global viewport_x, viewport_y, zoom_factor
-    if event.delta > 0:# Scroll ke atas
-        if zoom_factor > 0.5: zoom_factor -= 0.1
+    global viewport_x, viewport_y, faktor_zoom
+    if event.delta > 0:
+        if faktor_zoom > 0.5: faktor_zoom -= 0.1
     else:
-        if zoom_factor < 4.0:# Scroll ke bawah
-            zoom_factor += 0.1
-    update()
-            
-def on_key_press(event):
+        if faktor_zoom < 4.0:
+            faktor_zoom += 0.1
+    perbarui()
+
+def saat_tombol_ditekan(event):
     global viewport_y, viewport_x
-    if event.keysym == 'a' and viewport_x > 0:
+    if event.keysym == 'a':
         viewport_x -= 20
-    elif event.keysym == 's' and viewport_y < (INITIAL_HEIGHT  + viewport_height)// zoom_factor:
+    elif event.keysym == 's':
         viewport_y += 20
-    elif event.keysym == 'd' and viewport_x < (INITIAL_WIDTH + viewport_width)// zoom_factor:
+    elif event.keysym == 'd':
         viewport_x += 20
-    elif event.keysym == 'w' and  viewport_y > 0:
+    elif event.keysym == 'w':
         viewport_y -= 20
-    update()
+    perbarui()
 
 root = tk.Tk()
-root.title("Map Generator")
+root.title("Generator Peta")
 root.bind("<MouseWheel>", scroll)
-root.bind("<KeyPress-a>", on_key_press)
-root.bind("<KeyPress-s>", on_key_press)
-root.bind("<KeyPress-d>", on_key_press)
-root.bind("<KeyPress-w>", on_key_press)
+root.bind("<KeyPress-a>", saat_tombol_ditekan)
+root.bind("<KeyPress-s>", saat_tombol_ditekan)
+root.bind("<KeyPress-d>", saat_tombol_ditekan)
+root.bind("<KeyPress-w>", saat_tombol_ditekan)
 frame = ttk.Frame(root, padding=10)
 frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
-map_label = ttk.Label(frame)
-map_label.grid(row=0, column=0, padx=10, pady=10)
+label_peta = ttk.Label(frame)
+label_peta.grid(row=0, column=0, padx=10, pady=10)
 
-generate_button = ttk.Button(root, text="Generate Map", command=update_map)
-generate_button.grid(row=1, column=0, pady=10)
+tombol_generate = ttk.Button(root, text="Buat Peta", command=perbarui_peta)
+tombol_generate.grid(row=1, column=0, pady=10)
 
-
-update_map()
+perbarui_peta()
 root.mainloop()
-        
